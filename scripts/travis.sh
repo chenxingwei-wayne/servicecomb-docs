@@ -16,33 +16,30 @@
 ## limitations under the License.
 ## ---------------------------------------------------------------------------
 #bin/sh
-
+CUR_DIR=$PWD
 echo "start building servicecomb-docs."
 echo "env TRAVIS_BRANCH=$TRAVIS_BRANCH"
 echo "env PARAM1=$1"
+echo "env CUR_DIR=$CUR_DIR"
 
 if [ "$1" == "script" ]; then
-  npm install gitbook-cli -g
-  gitbook build java-chassis-reference docs/java-chassis
   gitbook build saga-reference docs/saga
   gitbook build service-center-reference docs/service-center
+  cd $CUR_DIR/java-chassis-reference/zh_CN
+  mkdocs build -d ../../docs/java-chassis/zh_CN
+  cd $CUR_DIR/java-chassis-reference/en_US
+  mkdocs build -d ../../docs/java-chassis/en_US
+  cd $CUR_DIR
+
   git clone --depth=10 --branch=master https://$PUSH_TARGET_URL servicecomb-java-chassis-doc
   if [ "$TRAVIS_BRANCH" == "master" ]; then
-    mkdir servicecomb-java-chassis-doc/temp
-    cp -r servicecomb-java-chassis-doc/docs/java-chassis/1.x servicecomb-java-chassis-doc/temp
-    ls -l servicecomb-java-chassis-doc/temp
-    ls -l servicecomb-java-chassis-doc/temp/1.x
-    rm -r servicecomb-java-chassis-doc/docs/java-chassis/*
+    rm -r servicecomb-java-chassis-doc/docs/java-chassis/zh_CN/*
+    rm -r servicecomb-java-chassis-doc/docs/java-chassis/en_US/*
     rm -r servicecomb-java-chassis-doc/docs/saga/*
     rm -r servicecomb-java-chassis-doc/docs/service-center/*
     cp -r docs/ servicecomb-java-chassis-doc/
-    cp -r servicecomb-java-chassis-doc/temp/1.x servicecomb-java-chassis-doc/docs/java-chassis
     ls -l servicecomb-java-chassis-doc/docs/java-chassis
     ls -l servicecomb-java-chassis-doc/docs/java-chassis/1.x
-    rm -r servicecomb-java-chassis-doc/temp
-  elif [ "$TRAVIS_BRANCH" == "java-chassis-1.x" ]; then
-    rm -r servicecomb-java-chassis-doc/docs/java-chassis/1.x/*
-    cp -r docs/java-chassis/* servicecomb-java-chassis-doc/docs/java-chassis/1.x
   else
     exit 1
   fi
